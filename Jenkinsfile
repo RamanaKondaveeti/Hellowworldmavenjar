@@ -1,21 +1,68 @@
-pipeline{
-    agent any
-
-    tools {
-         maven 'maven'
-         jdk 'java'
+pipeline {
+    environment {
+      PATH = "/opt/maven/bin/:$PATH"
+   //   PATH = "/opt/gradle/gradle-7.4.2/bin/:$PATH"
+    //  JAVA_TOOL_OPTIONS = "-Duser.home=/opt/maven"
+    }
+agent any 
+     options {
+        timestamps()
     }
 
-    stages{
-        stage('checkout'){
-            steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'github access', url: 'https://github.com/sreenivas449/java-hello-world-with-maven.git']]])
-            }
-        }
-        stage('build'){
-            steps{
-               bat 'mvn package'
-            }
-        }
+    stages {
+		
+        stage ("Clone Repository") {
+                steps {
+                   git branch: 'master', url: 'https://github.com/RamanaKondaveeti/AndroidMavenExample.git'
+                }
+            }  
+
+        stage('Prep') {
+			steps {
+				script {
+					GIT_BRANCH=sh(returnStdout: true, script: 'git symbolic-ref --short HEAD').trim()
+					currentBuild.setDisplayName("#${currentBuild.number} [" + GIT_BRANCH + "]")
+					sh "export GIT_BRANCH=$GIT_BRANCH"
+				}
+			}
+		}  
+    
+        stage ('Building Apk') {
+            steps {
+              
+               sh "mvn clean install package"
+            }   
+            
+	        }
+
+        stage('Quality Analysis') {
+            parallel {
+                // run Sonar Scan and Integration tests in parallel. 
+                stage('Integration Test') {
+                    steps {
+                        echo 'Run integration tests here...'
+                    }
+                }
+
+        stage ('Declarative Post Options') {
+            steps {
+                script {
+                    echo 'Sending Post Build Notifications'
+                }
+            }   
+            
+	        }
+	}
+}
     }
 }
+	
+
+
+
+
+
+
+    
+
+    
