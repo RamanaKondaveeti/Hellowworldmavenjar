@@ -13,7 +13,7 @@ agent any
 		
         stage ("Clone Repository") {
                 steps {
-                   git branch: 'master', url: 'https://github.com/RamanaKondaveeti/AndroidMavenExample.git'
+                   git branch: 'master', url: 'https://github.com/RamanaKondaveeti/Hellowworldmavenjar.git'
                 }
             }  
 
